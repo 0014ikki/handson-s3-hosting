@@ -1,0 +1,40 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2022-09-04T16:01:56Z",
+  "id": "jaws-days-2022-handson-s3",
+  "duration": 69,
+  "title": "[JAWS DAYS 2022]ハンズオンーS3でWebサイトを公開して、リソースポリシーでアクセスを制御してみようー",
+  "authors": "kazuki_oishi",
+  "summary": "JAWS DAYS 2022ハンズオン用資料",
+  "source": "1J0n2Qg0oDlnragy9ZcjIpjbuUwL9o-Fa-4ELCBosDhk",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "web"
+  ],
+  "tags": [
+    "cds17",
+    "chrome-dev-summit-2016",
+    "devfest18",
+    "gdd17",
+    "io2016",
+    "io2017",
+    "io2018",
+    "io2019",
+    "jsconfeu",
+    "kiosk",
+    "pwa-dev-summit",
+    "pwa-roadshow",
+    "tag-web",
+    "typtwd17",
+    "web"
+  ],
+  "feedback": "https://twitter.com/0014ikki",
+  "ga": "UA-99999999-1",
+  "url": "jaws-days-2022-handson-s3"
+}

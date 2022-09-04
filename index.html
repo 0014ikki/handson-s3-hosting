@@ -1,0 +1,413 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>[JAWS DAYS 2022]ハンズオンーS3でWebサイトを公開して、リソースポリシーでアクセスを制御してみようー</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="UA-99999999-1"
+                  id="jaws-days-2022-handson-s3"
+                  title="[JAWS DAYS 2022]ハンズオンーS3でWebサイトを公開して、リソースポリシーでアクセスを制御してみようー"
+                  environment="web"
+                  feedback-link="https://twitter.com/0014ikki">
+    
+      <google-codelab-step label="はじめに" duration="2">
+        <p class="image-container"><img style="width: 1600.00px" src="img/b85cc5d9acaf37cc.png"></p>
+<p>本ハンズオンでは以下のような方をターゲットにしています。</p>
+<ul>
+<li>とりあえず AWS を触ってみたい人</li>
+<li>AWS で静的 Web サイトを構築してみたい人</li>
+<li>AWS リソースポリシーがよくわからない人</li>
+</ul>
+<h2 is-upgraded><strong>前提と注意事項</strong></h2>
+<aside class="warning"><p>ハンズオンで利用するサービスは無料枠を中心として構成していますが、一部課金が発生する場合があります。</p>
+</aside>
+<aside class="warning"><p>HTMLの記法など、AWS に関連しない内容の解説は含まれていません。</p>
+</aside>
+<aside class="warning"><p>ハンズオン終了後のリソースの削除は、各自の責任で実施をお願いします。</p>
+</aside>
+<h2 is-upgraded><strong>ご準備いただきたいもの</strong></h2>
+<ul>
+<li>マネジメントコンソールにアクセスするための Webブラウザ<br>Chrome / Firefox <br><img style="width: 750.00px" src="img/32d9ad7bb8d38a03.png"></li>
+<li>HTML ファイルを作成するためのテキストエディタ<br><img style="width: 750.00px" src="img/599a1d4a13a9ffd2.png"></li>
+<li>AWS アカウント及び Administrator Access 権限を持つ IAM ユーザー<br><img style="width: 750.00px" src="img/a02139f0b7cfc3c9.png"></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="完成予想図" duration="2">
+        <p>このハンズオンでは以下のようなシステムを構築します。</p>
+<ul>
+<li>インターネット上から、自分の作成した Web ページにアクセス出来るようになります。</li>
+<li>特定のページへのアクセスを制限し、閲覧出来るユーザーを限定します。</li>
+</ul>
+<p class="image-container"><img style="width: 624.50px" src="img/ae0517314dd9ad0a.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[座学] Amazon S3 とは" duration="0">
+        <p class="image-container"><img style="width: 631.14px" src="img/5da5e168a49c738b.png"></p>
+<h2 is-upgraded><br><strong>S3 って何ができるの</strong></h2>
+<p>AWS が提供するストレージサービスです。<br>料金が非常に安く、容量を気にせずにデータを格納したり取得したり出来ます。<br></p>
+<aside class="special"><p>リージョンによって異なりますが東京リージョンですと、0.025USD/GB にてご利用いただけます。例えば、アップロードしたデータを当日中に削除すると、0.001USD/GB 以下にてご利用いただけます。</p>
+</aside>
+<h2 is-upgraded><br><strong>S3 のメリット</strong></h2>
+<ul>
+<li>事実上無制限の容量を持つストレージ</li>
+<li>99.9999999% の高い耐久性</li>
+<li>様々な AWS  サービスとシームレスに連携</li>
+<li><strong>静的 Web サイトホスティング機能 </strong>← 本ハンズオンではここを掘り下げます</li>
+</ul>
+<h2 is-upgraded><br><strong>S3 の用語の説明</strong></h2>
+<h3 is-upgraded><img style="width: 116.50px" src="img/aaada0c81c8ea8ad.png"></h3>
+<h3 is-upgraded>バケット</h3>
+<p>データを格納する場所のことです。<br>S3 上のデータはこのバケット単位で管理されます。<br></p>
+<aside class="special"><p>バケットの名前は全世界の AWS アカウントの中で一意である必要があります。</p>
+</aside>
+<h3 is-upgraded><br>オブジェクト</h3>
+<p>バケットに格納されるデータの本体です。<br>格納できるファイルの形式に制限はありません。<br>オブジェクトの中に実質無制限に格納できますが、1つのオブジェクトのサイズは最大 5TB までに制限されています。</p>
+<h3 is-upgraded><br>バケットポリシー</h3>
+<p>バケットや格納されたオブジェクトにアクセスする権限の設定です。<br>特定のオブジェクトへのアクセスを拒否するといったことができます。</p>
+<h2 is-upgraded><br><strong>S3 の基本操作</strong></h2>
+<ul>
+<li>S3 コンソールにアクセスして GUI から操作ができます。</li>
+<li>AWS CLI や、AWS SDK を利用して、CUI から操作ができます。</li>
+</ul>
+<h2 is-upgraded><br><strong>S3 の料金</strong></h2>
+<p>S3 の料金には細かい料金体系があります。また今日は、S3 スタンダードというストレージクラスを扱いますが、データのアーカイブに最適な S3 Glacier (グレイシア) を始めとした様々なクラスが存在し、それぞれ料金が異なります。</p>
+<p>料金をざっくりと解説すると「容量」と「リクエスト」によって課金がされます。<br>「容量」への課金は、データを格納している時間だけ、従量課金されます。<br>「リクエスト」への課金は「容量」に比べると僅かな金額ですが、細かいファイルをたくさん利用したり、移動したり戻したりと頻繁にオブジェクトを操作した場合などに高額になることがあります。</p>
+<aside class="special"><p>アカウント作成から 12 ヶ月間は、以下の無料利用枠があります。</p>
+<ul>
+<li>スタンダード ストレージクラスで 5 GB のストレージ</li>
+<li>20,000 GET リクエスト</li>
+<li>2,000 PUT、COPY、POST、あるいは LIST リクエスト</li>
+</ul>
+</aside>
+<p class="image-container"><img style="width: 1219.00px" src="img/eff7180e50bed0d.png"></p>
+<p>詳しい料金は以下のサイトに記載されています</p>
+<p>Amazon S3 の料金<br><a href="https://aws.amazon.com/jp/s3/pricing/" target="_blank">https://aws.amazon.com/jp/s3/pricing/</a></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[ハンズオン] S3 バケットを作成する" duration="10">
+        <h2 is-upgraded><strong>1. S3 の管理画面にアクセスする</strong></h2>
+<p>検索ボックスにて s3 と入力して、S3 をクリックするか、<a href="https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-1" target="_blank">こちら</a> をクリックして、Amazon S3 コンソールを開きます。</p>
+<p class="image-container"><img style="width: 2042.00px" src="img/871c9d8988a91d93.png"></p>
+<h2 is-upgraded><br>2.<strong>バケットを作成する</strong></h2>
+<p>[ <strong>バケットを作成</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 1213.00px" src="img/4c4d528bf217706.png"></p>
+<p>バケット名は任意ですが、handson-website-＜お名前＞ をお勧めします。</p>
+<h2 is-upgraded><br>3.<strong>AWS リージョン</strong></h2>
+<p>AWS リージョンが [ <strong>アジアパシフィック (東京) ap-northeast-1</strong> ] であることを確認してください。</p>
+<p class="image-container"><img style="width: 1662.00px" src="img/6cbb109233b0a57a.png"></p>
+<h2 is-upgraded><br>4.<strong>ブロックパブリックアクセス設定</strong></h2>
+<p>画面中断あたりにある [ <strong>このバケットのブロックパブリックアクセス設定</strong> ] の [ <strong>□ パブリックアクセスをすべて ブロック</strong> ] のチェックボックスにチェックが入っていることを確認します。</p>
+<p>ページ最下部の [ <strong>バケットを作成</strong> ] ボタンをクリックして、バケットを作成してください。</p>
+<p class="image-container"><img style="width: 1648.00px" src="img/74848abe5b356033.png"></p>
+<p>以上で、S3 バケットの作成は完了です。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[ハンズオン] オブジェクトをアップロードする" duration="5">
+        <h2 is-upgraded><strong>1.HTML ファイルをダウンロードする</strong></h2>
+<p>時間を短縮するため、本ハンズオンでは既成の html ファイルを利用します。<br>以下 URL から Zip ファイルをダウンロードしてください。<br><a href="https://d3pivyjogqfrq3.cloudfront.net/Material/html.zip" target="_blank">https://d3pivyjogqfrq3.cloudfront.net/Material/html.zip</a></p>
+<p>Zip ファイルがダウンロードできたら、任意の場所に解凍してください。<br>html ファイルや、images、css フォルダが展開されます。</p>
+<p class="image-container"><img style="width: 1402.00px" src="img/89b1adf7db555db6.png"></p>
+<h2 is-upgraded><br>2.<strong>ファイルを S3 バケットにアップロードする</strong></h2>
+<p>以下 S3 バケットが開かれている状態で、先ほど解凍したファイルとフォルダーを全て選択し、ドラッグしてください。</p>
+<p class="image-container"><img style="width: 1275.00px" src="img/36328c2713870d3b.png"></p>
+<p>以下のような画面になるので、ドロップします。</p>
+<p class="image-container"><img style="width: 725.00px" src="img/c2114a9ec77c0705.png"></p>
+<p>以下のような、アップロードの画面に遷移するので</p>
+<p class="image-container"><img style="width: 849.00px" src="img/e51cf8c307e7204c.png"></p>
+<p>[ <strong>アップロード</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 820.00px" src="img/1443acbe03d2f19.png"></p>
+<p>以上で、オブジェクトのアップロードは完了です。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[ハンズオン] Webサイトを公開する" duration="10">
+        <h2 is-upgraded><strong>1.パブリックアクセスのブロックを解除</strong></h2>
+<p>とりあえず Web サイトを公開してみましょう。<br>パブリックアクセスのブロックを解除して、バケットポリシーを設定します。</p>
+<p>作成した S3 バケットの管理画面にて [ <strong>アクセス許可</strong> ] タブを開き、</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/2d48749033e138ac.png"></p>
+<p>[ <strong>ブロックパブリックアクセス (バケット設定)</strong> ] にある [ <strong>編集</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 1112.00px" src="img/83a869361ccc4521.png"></p>
+<p>[ <strong>パブリックアクセスのブロック (バケット設定) を編集</strong> ] が開くので、<strong>□ パブリックアクセスをすべてブロック</strong> のチェックボックスのチェックを外します。</p>
+<p>[ <strong>変更の保存</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 1682.00px" src="img/181c6b1e164e176c.png"></p>
+<p>[ <strong>パブリックアクセスのブロック (バケット設定) を編集</strong> ] 画面が表示されるので「<strong>確認</strong>」と入力して、[ <strong>確認</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 1264.00px" src="img/eba638239d351493.png"></p>
+<h2 is-upgraded><strong>2.バケットポリシーの設定</strong></h2>
+<p>次に、バケットポリシーを設定します。<br>中段にあります [ <strong>バケットポリシー</strong> ] 欄の、[ <strong>編集</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/9423814aca3a5d6c.png"></p>
+<p>以下の JSON を貼り付けし、&lt;バケット名&gt; の部分を作成したバケット名に変更してください。</p>
+<pre><code>{
+    &#34;Version&#34;: &#34;2012-10-17&#34;,
+    &#34;Statement&#34;: [
+        {
+            &#34;Sid&#34;: &#34;PublicRead&#34;,
+            &#34;Effect&#34;: &#34;Allow&#34;,
+            &#34;Principal&#34;: &#34;*&#34;,
+            &#34;Action&#34;: [
+                &#34;s3:GetObject&#34;,
+                &#34;s3:GetObjectVersion&#34;
+            ],
+            &#34;Resource&#34;: [
+                &#34;arn:aws:s3:::&lt;バケット名&gt;/*&#34;
+            ]
+        }
+    ]
+}
+</code></pre>
+<p>以下のようなイメージです。</p>
+<p class="image-container"><img style="width: 1104.00px" src="img/c763cc3ed6968e5c.png"></p>
+<p>バケットポリシーを設定すると、[ <strong>パブリックにアクセス可能</strong> ] と表示されるようになります。</p>
+<p class="image-container"><img style="width: 1110.00px" src="img/8f547a7a31838415.png"></p>
+<h2 is-upgraded><strong>3.静的ウェブサイトホスティングを有効化</strong></h2>
+<p>[ <strong>プロパティ</strong> ] タブを開き、</p>
+<p>ページ下部にある [ <strong>静的ウェブサイトホスティング</strong> ] にある [ <strong>編集</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 2024.00px" src="img/e54b5b9e9be655e9.png"></p>
+<p>[ <strong>静的ウェブサイトホスティングを編集</strong> ] の画面に遷移するので、[ <strong>静的ウェブサイトホスティング</strong> ] を <strong>○ 有効にする</strong> を選択します。</p>
+<h3 is-upgraded><strong>インデックスドキュメント</strong></h3>
+<p>Webサイトにアクセスしたときに、最初に表示されるページを設定します。<br>[ <strong>インデックスドキュメント</strong> ] に「index.html」と入力します。</p>
+<p class="image-container"><img style="width: 1704.00px" src="img/440854d8c27321f7.png"></p>
+<h3 is-upgraded><strong>エラードキュメント</strong></h3>
+<p>エラードキュメントも設定しておきましょう。<br>エラードキュメントはアクセスエラーになった際に表示されるページが設定できます。<br>[ <strong>エラードキュメント</strong> ] に「error.html」と入力します。</p>
+<p class="image-container"><img style="width: 1220.00px" src="img/6462bb751ac61ddf.png"></p>
+<p>画面下部の [ <strong>設定の保存</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 1704.00px" src="img/1ba898cf21ff592d.png"></p>
+<h2 is-upgraded><strong>4.確認</strong></h2>
+<p>[ <strong>静的ウェブホスティング</strong> ] に URL が表示されるので、クリックしてください。</p>
+<h3 is-upgraded><strong>ブラウザからアクセスしてみる</strong></h3>
+<p>以下、ページが表示されたら成功です。</p>
+<p class="image-container"><img style="width: 1402.00px" src="img/848437e7ed07c35d.png"></p>
+<h3 is-upgraded><strong>存在しないオブジェクトにアクセスしてみる</strong></h3>
+<p>存在しないページにリクエストしてみてください。アドレスバーになんでも良いのですが、「s3 静的ウェブホスティング URL/〜」と入力してアクセスしてみてください。</p>
+<p class="image-container"><img style="width: 522.00px" src="img/e3af44352e2a67ac.png"></p>
+<p>以下、ページが表示されたら成功です。</p>
+<p class="image-container"><img style="width: 1402.00px" src="img/5b6e65ba7b635b68.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[座学] バケットポリシーとは" duration="10">
+        <p>バケットポリシーとは、この S3 バケット (or オブジェクト) に誰がアクセスできるのか？特定の条件をつけて、アクセスを制御できる設計書のようなものです。</p>
+<p>「誰が？」と記載しましたが、AWS サービスを制御することも可能です。</p>
+<p>例えば、CloudFront という AWS の CDN のサービスがありますが、CloudFront からのアクセスは許可するが、S3 への直接アクセスは禁止する。といった使い方ができます。</p>
+<p>ポリシーは以下のような要素を組み合わせて作成します。</p>
+<h3 is-upgraded><br><strong>アクション</strong></h3>
+<p>S3 でいうと「ファイルをダウンロードする」だとか「ファイル名を変更する」などといった処理のことです。<br>制御したいアクションを定義します。</p>
+<h3 is-upgraded><br><strong>エフェクト</strong></h3>
+<p>アクションを許可(Allow)するのか、拒否(Deny)するのかを定義します。</p>
+<h3 is-upgraded><br><strong>リソース</strong></h3>
+<p>対象の AWS のサービスや S3 バケット、オブジェクトのことです。<br>アクセス制御の対象を指定します。</p>
+<p>これらの要素を組み合わせて、リソースへのアクセス制御をおこないます。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[座学] バケットポリシーの解説①" duration="5">
+        <h3 is-upgraded><strong>ケース : ページへのアクセスを禁止したい</strong></h3>
+<p>S3 バケットのバケットポリシーでアクセスを禁止すると、403 Forbidden エラーになります。<br>S3 の静的ウェブホスティング機能にはエラーが発生した際にエラーページに遷移させることができます。<br>この機能を利用すると、メンテナンス中のページへのアクセスを禁止し、全てのアクセスをメンテナンスページに遷移させることができます。</p>
+<p class="image-container"><img style="width: 1542.00px" src="img/d8dd923fd431d378.png"></p>
+<h3 is-upgraded><br><strong>オブジェクト単位のアクセス制御</strong></h3>
+<p>バケットポリシーは、オブジェクト単位でのアクセス制御にも対応しています。<br>前述の手順では、以下のように「*」を利用して、バケットの配下全部に適用していました。</p>
+<pre><code>&#34;Resource&#34;: [ &#34;arn:aws:s3:::&lt;バケット名&gt;/*&#34; ]</code></pre>
+<p>これを、maintenance.html ファイルと指定すると、maintenance.html のみにアクセスできるバケットポリシーを記述できます。</p>
+<pre><code>&#34;Resource&#34;: [ &#34;arn:aws:s3:::&lt;バケット名&gt;/maintenance.html&#34; ]</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[ハンズオン] ポリシー制御① メンテナンスページに誘導する" duration="10">
+        <p>ここでは、Webサイトのメンテナンスをおこなうシーンを想定します。改修中のページにはアクセスしてほしくないので、そこを制限します。</p>
+<h2 is-upgraded><br><strong>1.現状確認</strong></h2>
+<p>まずは、現在のリクエストを確認してみましょう。<br>Google Chrome の右上にあるオプションボタンから、<strong>その他のツール</strong>をクリックし、<strong>デベロッパー ツール</strong>を選択します。</p>
+<p class="image-container"><img style="width: 772.00px" src="img/a9edca559a3c873c.png"></p>
+<p>[ <strong>Network</strong> ] タブに移動して、[ <strong>Ctrl</strong> ] キー と [ <strong>R</strong> ] キーを同時に押下してください。</p>
+<p class="image-container"><img style="width: 679.00px" src="img/44e4f73a644bca81.png"></p>
+<p>すると、Status が 200 や 304 が表示されるかと思います。</p>
+<p class="image-container"><img style="width: 607.00px" src="img/6a159fb6dd9bf7aa.png"></p>
+<p>このステータスは、S3 の静的ウェブホスティングサービスが Google Chrome からの<strong>リクエスト</strong>に対して応答 (<strong>レスポンス</strong>) した結果です。このコードは一般的に<strong>ステータスコード</strong>と呼ばれます。</p>
+<p class="image-container"><img style="width: 1214.00px" src="img/5b774c26810fb4fe.png"></p>
+<p>ステータスコードに関してはここでは深く掘り下げませんが、ざっくりと、200、300 番台が正常系応答で、400、500 番台が異常系応答とご理解ください。</p>
+<h2 is-upgraded><br><strong>2.バケットポリシーを修正する</strong></h2>
+<p>ステータスコードをざっくりと理解したところで、バケットポリシーを変更してみましょう。</p>
+<p>[ <strong>アクセス許可</strong> ] を選択し、バケットポリシーの [ <strong>削除</strong> ] ボタンをクリックします。</p>
+<aside class="special"><p>バケットポリシーは削除前に、コピーして控えておくと便利です。</p>
+</aside>
+<p class="image-container"><img style="width: 2048.00px" src="img/8a0f534789736e67.png"></p>
+<p>[ <strong>バケットポリシーを削除してもよろしいですか？</strong> ] と確認画面が表示されるので、「削除」と入力して、[ <strong>削除</strong> ] ボタンをクリックして下さい。</p>
+<p class="image-container"><img style="width: 1264.00px" src="img/4a0e4402dbce740b.png"></p>
+<p>これで、S3 バケットへのアクセスが許可されていない状態になりました。<br>再度ページにアクセスすると、403 Forbidden - AccessDenied が表示されます。</p>
+<p class="image-container"><img style="width: 1239.00px" src="img/dde2f32e7f4188e2.png"></p>
+<p>次に、メンテナンスページへリダイレクトされるように設定します。<br>[ <strong>プロパティ</strong> ] タブを選択し、ページ下部にある [ <strong>静的ウェブサイトホスティング</strong>  ] の右側にある [ <strong>編集</strong> ] ボタンをクリックしてください。</p>
+<p>[ <strong>静的ウェブサイトホスティングを編集</strong> ] 画面に遷移するので、<strong>エラードキュメント - オプション</strong> に「maintenance.html」と入力してください。</p>
+<p class="image-container"><img style="width: 1642.00px" src="img/592cb577056629a3.png"></p>
+<p>ページ下部にある [ <strong>変更の保存</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img style="width: 1642.00px" src="img/bde57fff178a4c59.png"></p>
+<p>バケットポリシーに以下のコードを貼り付けてください。&lt;バケット名&gt; をバケット名に変更してください。</p>
+<pre><code>{
+    &#34;Version&#34;: &#34;2012-10-17&#34;,
+    &#34;Statement&#34;: [
+        {
+            &#34;Sid&#34;: &#34;PublicRead&#34;,
+            &#34;Effect&#34;: &#34;Allow&#34;,
+            &#34;Principal&#34;: &#34;*&#34;,
+            &#34;Action&#34;: [
+                &#34;s3:GetObject&#34;,
+                &#34;s3:GetObjectVersion&#34;
+            ],
+            &#34;Resource&#34;: [
+                &#34;arn:aws:s3:::&lt;バケット名&gt;/maintenance.html&#34;
+            ]
+        }
+    ]
+}
+</code></pre>
+<p>このポリシーでは、<code>maintenance.html</code> へのアクセスのみが許可されています。<br>再度ページにアクセスして、以下が表示されたら成功です。<br>403 Forbidden エラーが発生して、maintenance.html に画面が遷移しています。</p>
+<p class="image-container"><img style="width: 1402.00px" src="img/83598e89fa63eda7.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[座学] バケットポリシーの解説②" duration="5">
+        <h3 is-upgraded><strong>ケース : 特定のユーザーのみアクセスを許可する</strong></h3>
+<p>さらにきめ細かい制御をおこなうには、バケットポリシーのコンディション要素を使用します。<br>例えば、特定の VPC や特定の送信元  IP アドレスからのリクエストのみ許可するといった、きめ細かなアクセス制限ができます。</p>
+<p>以下のバケットポリシーですと、1.1.1.1 からのアクセスのみ許可する設定となります。</p>
+<pre><code>&#34;Condition&#34;: {
+  &#34;IpAddress&#34;: {
+    &#34;aws:SourceIp&#34;: [
+      &#34;1.1.1.1/32&#34;
+    ]
+},</code></pre>
+<p>また、以下の場合は、1.1.1.1 からのアクセスを拒否する設定となります。</p>
+<pre><code>&#34;Condition&#34;: {
+  &#34;NotIpAddress&#34;: {
+    &#34;aws:SourceIp&#34;: [
+      &#34;1.1.1.1/32&#34;
+    ]
+},</code></pre>
+<p>これをもちいて、オフィス利用するの送信元 IP アドレスからのアクセスのみを許可することで、「社内ネットワークからのみアクセスを許可する」といったことが可能です。</p>
+<h3 is-upgraded><strong>送信元 IP アドレス</strong></h3>
+<p>インターネットの世界はグローバル IP アドレスで接続をします。</p>
+<p>自宅だとルーターで、会社だとルーターや L3 スイッチ、WAN 網を介して、グローバル IP アドレスにて接続をします。</p>
+<p>Web ホスティングするサーバーにリクエストする際、クライアントは接続元のグローバル IP アドレス情報を HTTP ヘッダーに付与して送信してきます。この機能を利用して、送信元 IP 制限が利用できます。</p>
+<p class="image-container"><img style="width: 1760.00px" src="img/832ef4d3654d9bfa.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[ハンズオン] ポリシー制御② 社外秘のページへのアクセスを制御する" duration="10">
+        <h2 is-upgraded><strong>1.現状確認</strong></h2>
+<p>バケットポリシーを以下のように戻してください。<br>&lt;バケット名&gt; をバケット名に変更してください。</p>
+<pre><code>{
+    &#34;Version&#34;: &#34;2012-10-17&#34;,
+    &#34;Statement&#34;: [
+        {
+            &#34;Sid&#34;: &#34;PublicRead&#34;,
+            &#34;Effect&#34;: &#34;Allow&#34;,
+            &#34;Principal&#34;: &#34;*&#34;,
+            &#34;Action&#34;: [
+                &#34;s3:GetObject&#34;,
+                &#34;s3:GetObjectVersion&#34;
+            ],
+            &#34;Resource&#34;: [
+                &#34;arn:aws:s3:::&lt;バケット名&gt;/*&#34;
+            ]
+        }
+    ]
+}</code></pre>
+<p>以下のようなイメージです。</p>
+<p class="image-container"><img style="width: 1384.00px" src="img/3e312a6e0e781c51.png"></p>
+<h3 is-upgraded><strong>エラードキュメント</strong></h3>
+<p>エラードキュメントも maintenance.html から error.html に戻しておいてください。</p>
+<h2 is-upgraded><img style="width: 1220.00px" src="img/77287bd4b0baec16.png"></h2>
+<h2 is-upgraded><br><strong>2.自分のグローバル IP を確認する</strong></h2>
+<p>ご利用中のネットワークの送信元 IP アドレスを調べるには、確認くんなどのサービスを利用するかアクセスログを確認する方法があります。</p>
+<p>確認くん<br><a href="https://www.ugtop.com/spill.shtml" target="_blank">https://www.ugtop.com/spill.shtml</a></p>
+<p>上記 URL にアクセスして、表示された IP アドレスが現在利用されているネットワークのグローバル IP アドレスになります。</p>
+<p class="image-container"><img style="width: 1211.00px" src="img/fe26b5104d61de65.png"></p>
+<p>バケットポリシーには以下 JSON をを設定してください。</p>
+<p>1.1.1.1/32 の部分はご自身のグローバル IP アドレスを指定ください。<br>&lt;バケット名&gt; をバケット名に変更してください。</p>
+<pre><code>{
+        &#34;Version&#34;: &#34;2012-10-17&#34;,
+        &#34;Statement&#34;: [
+                {
+                        &#34;Sid&#34;: &#34;PublicRead&#34;,
+                        &#34;Effect&#34;: &#34;Allow&#34;,
+                        &#34;Principal&#34;: &#34;*&#34;,
+                        &#34;Action&#34;: [
+                                &#34;s3:GetObject&#34;,
+                                &#34;s3:GetObjectVersion&#34;
+                        ],
+                        &#34;Resource&#34;: &#34;arn:aws:s3:::&lt;バケット名&gt;/*&#34;,
+                        &#34;Condition&#34;: {
+                                &#34;IpAddress&#34;: {
+                                        &#34;aws:SourceIp&#34;: &#34;1.1.1.1/32&#34;
+                                }
+                        }
+                },
+                {
+                        &#34;Sid&#34;: &#34;ErrorHtml&#34;,
+                        &#34;Effect&#34;: &#34;Allow&#34;,
+                        &#34;Principal&#34;: &#34;*&#34;,
+                        &#34;Action&#34;: [
+                                &#34;s3:GetObject&#34;,
+                                &#34;s3:GetObjectVersion&#34;
+                        ],
+                        &#34;Resource&#34;: &#34;arn:aws:s3:::&lt;バケット名&gt;/error.html&#34;
+                }
+        ]
+}
+</code></pre>
+<p>これで、ご利用中のネットワーク以外からのアクセスはエラーになるようになりました。<br>制限の状態を確認するには、スマートフォンから Webサイトの URL にアクセスしていただき、Wi-Fi 環境から 4G/5G 回線に切り替えることで接続元 IP アドレスにてアクセスを制限できているのが確認できます。</p>
+<p>または、バケットポリシーで指定した送信元 IP アドレスを[127.0.0.1/32]といったアドレスに変更することで、ご利用中のネットワークからのアクセスをブロックすることが出来ます。</p>
+<aside class="warning"><p>※適当な IP アドレスを指定すると、どこかの誰かからのアクセスを許可してしまう可能性があります。<br> 先の例で挙げた 127.0.0.1/32 はループバックアドレスといって、 自分自身を指すので安全に利用可能です。</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="まとめ" duration="0">
+        <p>いかがでしたでしょうか。</p>
+<p>Amazon S3 のバケットポリシーを利用すると細かく権限が付与できますし、本ハンズオンでは取り扱いませんが、CloudFront を使ってコンテンツ配信する際に、この S3 バケットポリシーを利用すると、CloudFront 経由でのアクセスのみ許可して S3 自体のオリジンコンテンツを守るアーキテクチャーを構築することもできます。</p>
+<p>（こちらは別の機会にハンズオンを開催させていただきます。）</p>
+<p class="image-container"><img style="width: 1698.00px" src="img/7921d1ec833d79c.png"></p>
+<p>本ハンズオンは以上となります。</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
