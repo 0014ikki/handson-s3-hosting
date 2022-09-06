@@ -72,7 +72,7 @@
 <h2 is-upgraded><br><strong>S3 のメリット</strong></h2>
 <ul>
 <li>事実上無制限の容量を持つストレージ</li>
-<li>99.9999999% の高い耐久性</li>
+<li>99.99999999%(イレブンナイン) の高い耐久性</li>
 <li>様々な AWS  サービスとシームレスに連携</li>
 <li><strong>静的 Web サイトホスティング機能 </strong>← 本ハンズオンではここを掘り下げます</li>
 </ul>
@@ -80,7 +80,7 @@
 <h3 is-upgraded><img style="width: 116.50px" src="img/aaada0c81c8ea8ad.png"></h3>
 <h3 is-upgraded>バケット</h3>
 <p>データを格納する場所のことです。<br>S3 上のデータはこのバケット単位で管理されます。<br></p>
-<aside class="special"><p>バケットの名前は全世界の AWS アカウントの中で一意である必要があります。</p>
+<aside class="special"><p>バケットの名前は全世界の AWS アカウントの中で一意である必要があります。<br>これは、S3 に対してパブリックアクセスする際の URL としてバケット名を利用するためです。</p>
 </aside>
 <h3 is-upgraded><br>オブジェクト</h3>
 <p>バケットに格納されるデータの本体です。<br>格納できるファイルの形式に制限はありません。<br>オブジェクトの中に実質無制限に格納できますが、1つのオブジェクトのサイズは最大 5TB までに制限されています。</p>
@@ -134,7 +134,14 @@
 <p>Zip ファイルがダウンロードできたら、任意の場所に解凍してください。<br>html ファイルや、images、css フォルダが展開されます。</p>
 <p class="image-container"><img style="width: 1402.00px" src="img/89b1adf7db555db6.png"></p>
 <h2 is-upgraded><br>2.<strong>ファイルを S3 バケットにアップロードする</strong></h2>
-<p>以下 S3 バケットが開かれている状態で、先ほど解凍したファイルとフォルダーを全て選択し、ドラッグしてください。</p>
+<p>以下 S3 バケットが開かれている状態で、先ほど解凍した以下のファイルとフォルダーを全て選択し、ドラッグしてください。</p>
+<ul>
+<li>error.html</li>
+<li>maintenance.html</li>
+<li>images(フォルダ)</li>
+<li>css(フォルダ)</li>
+<li>index.html</li>
+</ul>
 <p class="image-container"><img style="width: 1275.00px" src="img/36328c2713870d3b.png"></p>
 <p>以下のような画面になるので、ドロップします。</p>
 <p class="image-container"><img style="width: 725.00px" src="img/c2114a9ec77c0705.png"></p>
@@ -142,6 +149,8 @@
 <p class="image-container"><img style="width: 849.00px" src="img/e51cf8c307e7204c.png"></p>
 <p>[ <strong>アップロード</strong> ] ボタンをクリックします。</p>
 <p class="image-container"><img style="width: 820.00px" src="img/1443acbe03d2f19.png"></p>
+<p>アップロードが完了すると以下のような画面になります。</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/35b3d67b658b7c8a.png"></p>
 <p>以上で、オブジェクトのアップロードは完了です。</p>
 
 
@@ -302,15 +311,17 @@
     &#34;aws:SourceIp&#34;: [
       &#34;1.1.1.1/32&#34;
     ]
-},</code></pre>
+  },
+}</code></pre>
 <p>また、以下の場合は、1.1.1.1 からのアクセスを拒否する設定となります。</p>
 <pre><code>&#34;Condition&#34;: {
   &#34;NotIpAddress&#34;: {
     &#34;aws:SourceIp&#34;: [
       &#34;1.1.1.1/32&#34;
     ]
-},</code></pre>
-<p>これをもちいて、オフィス利用するの送信元 IP アドレスからのアクセスのみを許可することで、「社内ネットワークからのみアクセスを許可する」といったことが可能です。</p>
+  },
+}</code></pre>
+<p>これをもちいて、利用するの送信元 IP アドレスからのアクセスのみを許可することで、「社内ネットワークからのみアクセスを許可する」といったことが可能です。</p>
 <h3 is-upgraded><strong>送信元 IP アドレス</strong></h3>
 <p>インターネットの世界はグローバル IP アドレスで接続をします。</p>
 <p>自宅だとルーターで、会社だとルーターや L3 スイッチ、WAN 網を介して、グローバル IP アドレスにて接続をします。</p>
@@ -397,6 +408,29 @@
 <p>（こちらは別の機会にハンズオンを開催させていただきます。）</p>
 <p class="image-container"><img style="width: 1698.00px" src="img/7921d1ec833d79c.png"></p>
 <p>本ハンズオンは以上となります。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="後片付け" duration="0">
+        <p>ハンズオンで作成したリソースを削除します。</p>
+<h2 is-upgraded><br><strong>S3 バケットを空にする</strong></h2>
+<p>S3 バケットを削除するには、まずバケット内のオブジェクトを全て削除する必要があります。</p>
+<p>ハンズオンで作成した S3 バケットをチェックし、[<strong>空にする</strong>] をクリックします。</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/db21aef9c259c755.png"></p>
+<p>「<strong>バケット「&lt;バケット名&gt;」内の全てのオブジェクトを完全に削除しますか?</strong>」と表示されるので、「<strong>完全に削除</strong>」と入力し、[<strong>空にする</strong>] をクリックします。</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/2c0ad019ed930ac7.png"></p>
+<p>「<strong>バケット「&lt;バケット名&gt;」が正常に空になりました</strong>」 と表示されたら成功です。</p>
+<p class="image-container"><img style="width: 1882.00px" src="img/81e036fa69f70d04.png"></p>
+<h2 is-upgraded><br><strong>S3 バケットを削除する</strong></h2>
+<p>バケットが空になったら、S3 バケットを削除します。</p>
+<p>ハンズオンで作成した S3 バケットをチェックし、[<strong>削除</strong>] をクリックします。</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/41f9e0c36c108c6f.png"></p>
+<p>「<strong>バケット「&lt;バケット名&gt;」を削除しますか?</strong>」と表示されるので、<strong>作成したバケット名 </strong>を入力し、[<strong>バケットを削除        </strong>] をクリックします。</p>
+<p class="image-container"><img style="width: 2048.00px" src="img/ec4f0e27df773590.png"></p>
+<p>「<strong>バケット「&lt;バケット名&gt;」が正常に削除されました</strong>」 と表示されたら成功です。</p>
+<p class="image-container"><img style="width: 1280.00px" src="img/73c56b77b0f7d403.png"></p>
+<p>以上で、ハンズオンで作成した リソースの削除は完了です。</p>
 
 
       </google-codelab-step>
