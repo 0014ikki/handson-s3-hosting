@@ -134,7 +134,8 @@
 <p>Zip ファイルがダウンロードできたら、任意の場所に解凍してください。<br>html ファイルや、images、css フォルダが展開されます。</p>
 <p class="image-container"><img style="width: 1402.00px" src="img/89b1adf7db555db6.png"></p>
 <h2 is-upgraded><br>2.<strong>ファイルを S3 バケットにアップロードする</strong></h2>
-<p>以下 S3 バケットが開かれている状態で、先ほど解凍した以下のファイルとフォルダーを全て選択し、ドラッグしてください。</p>
+<p>以下 S3 バケットが開かれている状態で、先ほど解凍した[html]フォルダの中身のファイルとフォルダーを全て選択し、ドラッグしてください。</p>
+<p>アップロードしていただくファイルやフォルダは以下のとおりです。</p>
 <ul>
 <li>error.html</li>
 <li>maintenance.html</li>
@@ -205,7 +206,7 @@
 <h3 is-upgraded><strong>エラードキュメント</strong></h3>
 <p>エラードキュメントも設定しておきましょう。<br>エラードキュメントはアクセスエラーになった際に表示されるページが設定できます。<br>[ <strong>エラードキュメント</strong> ] に「error.html」と入力します。</p>
 <p class="image-container"><img style="width: 1220.00px" src="img/6462bb751ac61ddf.png"></p>
-<p>画面下部の [ <strong>設定の保存</strong> ] ボタンをクリックします。</p>
+<p>画面下部の [ <strong>変更の保存</strong> ] ボタンをクリックします。</p>
 <p class="image-container"><img style="width: 1704.00px" src="img/1ba898cf21ff592d.png"></p>
 <h2 is-upgraded><strong>4.確認</strong></h2>
 <p>[ <strong>静的ウェブホスティング</strong> ] に URL が表示されるので、クリックしてください。</p>
@@ -239,7 +240,7 @@
     
       <google-codelab-step label="[座学] バケットポリシーの解説①" duration="5">
         <h3 is-upgraded><strong>ケース : ページへのアクセスを禁止したい</strong></h3>
-<p>S3 バケットのバケットポリシーでアクセスを禁止すると、403 Forbidden エラーになります。<br>S3 の静的ウェブホスティング機能にはエラーが発生した際にエラーページに遷移させることができます。<br>この機能を利用すると、メンテナンス中のページへのアクセスを禁止し、全てのアクセスをメンテナンスページに遷移させることができます。</p>
+<p>S3 バケットのバケットポリシーでアクセスを禁止すると、403 Forbidden エラーになります。<br>S3 の静的ウェブホスティング機能では、エラーが発生した際にエラーページに遷移させることができます。<br>この機能を利用すると、メンテナンス中のページへのアクセスを禁止し、全てのアクセスをメンテナンスページに遷移させることができます。</p>
 <p class="image-container"><img style="width: 1542.00px" src="img/d8dd923fd431d378.png"></p>
 <h3 is-upgraded><br><strong>オブジェクト単位のアクセス制御</strong></h3>
 <p>バケットポリシーは、オブジェクト単位でのアクセス制御にも対応しています。<br>前述の手順では、以下のように「*」を利用して、バケットの配下全部に適用していました。</p>
@@ -255,7 +256,7 @@
 <h2 is-upgraded><br><strong>1.現状確認</strong></h2>
 <p>まずは、現在のリクエストを確認してみましょう。<br>Google Chrome の右上にあるオプションボタンから、<strong>その他のツール</strong>をクリックし、<strong>デベロッパー ツール</strong>を選択します。</p>
 <p class="image-container"><img style="width: 772.00px" src="img/a9edca559a3c873c.png"></p>
-<p>[ <strong>Network</strong> ] タブに移動して、[ <strong>Ctrl</strong> ] キー と [ <strong>R</strong> ] キーを同時に押下してください。</p>
+<p>[ <strong>Network</strong> ] タブに移動して、[ <strong>Ctrl</strong> ] キー と [ <strong>R</strong> ] キー(Mac ユーザーの方は [ <strong>Command</strong> ] キー と [ <strong>R</strong> ]  キー)を同時に押下してください。</p>
 <p class="image-container"><img style="width: 679.00px" src="img/44e4f73a644bca81.png"></p>
 <p>すると、Status が 200 や 304 が表示されるかと思います。</p>
 <p class="image-container"><img style="width: 607.00px" src="img/6a159fb6dd9bf7aa.png"></p>
