@@ -3,13 +3,13 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2022-09-09T13:10:06Z",
+  "updated": "2022-09-11T11:48:34Z",
   "id": "jaws-days-2022-handson-s3",
   "duration": 69,
   "title": "[JAWS DAYS 2022]ハンズオンーS3でWebサイトを公開して、リソースポリシーでアクセスを制御してみようー",
   "authors": "kazuki_oishi",
   "summary": "JAWS DAYS 2022ハンズオン用資料",
-  "source": "1J0n2Qg0oDlnragy9ZcjIpjbuUwL9o-Fa-4ELCBosDhk",
+  "source": "",
   "theme": "web",
   "status": [
     "published"
